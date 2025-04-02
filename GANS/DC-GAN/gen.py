@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class Generator(nn.Module):
-    def __init__(self, z_dim=10, hidden_dim=64):
+    def __init__(self, z_dim=64, hidden_dim=64):
         super(Generator, self).__init__()
         self.z_dim = z_dim
 
