@@ -7,21 +7,21 @@ class Discriminator(nn.Module):
         
         # Input: (input_dim, 28, 28)
         self.block1 = nn.Sequential(
-            nn.Conv2d(input_dim, hidden_dim, kernel_size=4, stride=2),
+            nn.Conv2d(input_dim, hidden_dim, kernel_size=4, stride=2, padding=0, bias=False),
             nn.BatchNorm2d(hidden_dim),
-            nn.LeakyReLU(0.2)
+            nn.LeakyReLU(0.2, inplace=True)
         )
 
         # From (hidden_dim, 13, 13) -> (hidden_dim*2, 5, 5)
         self.block2 = nn.Sequential(
-            nn.Conv2d(hidden_dim, hidden_dim * 2, kernel_size=4, stride=2),
+            nn.Conv2d(hidden_dim, hidden_dim * 2, kernel_size=4, stride=2, padding=0, bias=False),
             nn.BatchNorm2d(hidden_dim * 2),
-            nn.LeakyReLU(0.2)
+            nn.LeakyReLU(0.2, inplace=True)
         )
 
         # From (hidden_dim*2, 5, 5) -> (1, 1, 1)
         self.block3 = nn.Sequential(
-            nn.Conv2d(hidden_dim * 2, 1, kernel_size=5, stride=1)
+            nn.Conv2d(hidden_dim * 2, 1, kernel_size=5, stride=1, padding=0, bias=False)
         )
 
     def forward(self, x):
