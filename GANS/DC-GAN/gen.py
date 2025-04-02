@@ -7,28 +7,28 @@ class Generator(nn.Module):
         self.z_dim = z_dim
 
         self.block1 = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=z_dim, out_channels=hidden_dim * 4, kernel_size=3, stride=2),
+            nn.ConvTranspose2d(in_channels=z_dim, out_channels=hidden_dim * 4, kernel_size=3, stride=2, bias=False),
             nn.BatchNorm2d(hidden_dim * 4),
             nn.ReLU(inplace=True)
         )
         # From (z_dim, 1,1) -> (hidden_dim*4, 3,3)
         self.block2 = nn.Sequential(
             nn.ConvTranspose2d(in_channels=hidden_dim * 4, out_channels=hidden_dim * 2,
-                            kernel_size=4, stride=2, padding=1, output_padding=1),
+                            kernel_size=4, stride=2, padding=1, output_padding=1, bias=False),
             nn.BatchNorm2d(hidden_dim * 2),
             nn.ReLU(inplace=True)
         )
         # From (hidden_dim*4, 3,3) -> (hidden_dim*2, 7,7)
         self.block3 = nn.Sequential(
             nn.ConvTranspose2d(in_channels=hidden_dim * 2, out_channels=hidden_dim,
-                            kernel_size=4, stride=2, padding=1),
+                            kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(hidden_dim),
             nn.ReLU(inplace=True)
         )
         # From (hidden_dim*2, 7,7) -> (hidden_dim, 14,14)
         self.block4 = nn.Sequential(
             nn.ConvTranspose2d(in_channels=hidden_dim, out_channels=1,
-                            kernel_size=4, stride=2, padding=1),
+                            kernel_size=4, stride=2, padding=1, bias=False),
             nn.Tanh()
         )
         # From (hidden_dim, 14,14) -> (1, 28,28)
