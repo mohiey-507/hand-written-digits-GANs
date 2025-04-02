@@ -9,7 +9,7 @@ class GenLoss(nn.Module):
     def forward(self, fake_logits):
         fake_targets = torch.ones_like(fake_logits)
         gen_loss = self.criterion(fake_logits, fake_targets)
-        return gen_loss.item()
+        return gen_loss
 
 class DiscLoss(nn.Module):
     def __init__(self):
@@ -24,4 +24,4 @@ class DiscLoss(nn.Module):
         real_loss = self.criterion(real_logits, real_targets)
 
         disc_loss = (real_loss + fake_loss) / 2
-        return disc_loss.item()
+        return disc_loss
