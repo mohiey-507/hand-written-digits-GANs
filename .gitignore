@@ -175,3 +175,6 @@ cython_debug/
 
 # Ignore data directory
 data/
+
+# Ignore outputs directory for now
+GANS/outputs/
