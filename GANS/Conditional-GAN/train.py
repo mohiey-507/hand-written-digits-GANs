@@ -19,8 +19,13 @@ SEED = 42
 torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 
-## Define device
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+## Set device
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
 print(f"Using device: {device}")
 
 ## Define hyperparameters
@@ -42,7 +47,7 @@ gen_input_dim, disc_input_chan = get_input_dimensions(z_dim, mnist_shape, n_clas
 
 ## Initialize models
 gen= Generator(input_dim=gen_input_dim, z_dim=z_dim, hidden_dim=gen_hidden_dim).to(device)
-disc = Discriminator(input_dim=disc_input_chan, hidden_dim=disc_hidden_dim, n_classes=n_classes).to(device)
+disc = Discriminator(input_dim=disc_input_chan, hidden_dim=disc_hidden_dim).to(device)
 
 ## Load MNIST dataset
 transform = v2.Compose([
