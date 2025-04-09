@@ -6,7 +6,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         self.layers = nn.Sequential(
-        # Input: (input_dim, 1, 1) -> Output: (hidden_dim, 14, 14)
+        # Input: (input_dim, 28, 28) -> Output: (hidden_dim, 14, 14)
             nn.Conv2d(in_channels=input_dim, out_channels=hidden_dim,
                     kernel_size=4, stride=2, padding=1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
