@@ -20,8 +20,14 @@ SEED = 42
 torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 
-## Define device
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+## Set device
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+print(f"Using device: {device}")
 
 ## Define hyperparameters
 batch_size = 128
