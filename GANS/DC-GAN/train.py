@@ -9,10 +9,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import v2
 
-from utils import show_tensor_images, weights_init
+from utils import show_tensor_images, weights_init, plot_captured_images
 from disc import Discriminator
 from gen import Generator
 
+import numpy as np
 from tqdm import tqdm
 
 ## Set seed for reproducibility
@@ -38,7 +39,7 @@ batch_size = 128
 lr = 2e-4
 beta1 = 0.5
 beta2 = 0.999
-n_epochs = 75
+n_epochs = 50
 display_step = 1000
 real_label_smoothing = 0.9
 
@@ -66,17 +67,26 @@ criterion = nn.BCEWithLogitsLoss()
 disc.train()
 gen.train()
 
+# Determine epochs for capture
+if n_epochs <= 10:
+    target_capture_epochs = set(range(1, n_epochs + 1))
+else:
+    capture_indices = np.linspace(0, n_epochs - 1, 10, dtype=int)
+    target_capture_epochs = set(idx + 1 for idx in capture_indices)
+
 cur_step = 0
+captured_images_data = []
+
 print("Starting Training Loop...")
 for epoch in range(n_epochs):
 
     total_gen_loss_epoch = 0.0
     total_disc_loss_epoch = 0.0
+    epoch_num = epoch + 1
 
-    pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{n_epochs}")
+    pbar = tqdm(dataloader, desc=f"Epoch {epoch_num}/{n_epochs}")
     for real_images, _ in pbar:
         real_images = real_images.to(device)
-        cur_batch_size = real_images.size(0) # Use size(0) for batch size
 
         # -------------------------
         #  Train Discriminator
@@ -113,9 +123,6 @@ for epoch in range(n_epochs):
         # ---------------------
         gen_opt.zero_grad()
 
-        # We need to recalculate the discriminator's output for the *current* fake images
-        # WITHOUT detaching them, so gradients can flow back to the generator.
-        # Reuse the fake_images generated earlier
         fake_logits_g = disc(fake_images)
 
         # Calculate Generator loss - Generator wants Discriminator to output 1 (real) for fake images
@@ -135,21 +142,20 @@ for epoch in range(n_epochs):
         })
 
         # -------------------------
-        #  Visualization
+        #  Step-based Visualization
         # -------------------------
         if cur_step % display_step == 0 and cur_step > 0:
-            # No need to recalculate epoch average here, just print current step info
-            print(f"\n-- Step {cur_step} --")
+            print(f"\n-- Step {cur_step} / Epoch {epoch_num} --")
             print(f"  Generator Loss (step): {gen_loss.item():.4f}")
             print(f"  Discriminator Loss (step): {disc_loss.item():.4f}")
 
             print("  Generated Images:")
-            gen.eval() # Switch to evaluation mode for generation
+            gen.eval()
             with torch.no_grad():
                 noise_vis = gen.get_noise(25, device=device)
                 vis_images = gen(noise_vis)
                 show_tensor_images(vis_images)
-            gen.train() # Switch back to training mode
+            gen.train()
 
         cur_step += 1
 
@@ -161,6 +167,20 @@ for epoch in range(n_epochs):
     print(f"Epoch {epoch+1} Completed:")
     print(f"  Avg Generator Loss: {avg_gen_loss_epoch:.4f}")
     print(f"  Avg Discriminator Loss: {avg_disc_loss_epoch:.4f}")
+
+    # -------------------------
+    #  Epoch-based Image Capture
+    # -------------------------
+    if epoch_num in target_capture_epochs:
+        print(f"  Capturing images at end of Epoch {epoch_num}...")
+        gen.eval()
+        with torch.no_grad():
+            noise_capture = gen.get_noise(25, device=device)
+            captured_images = gen(noise_capture)
+        gen.train()
+
+        captured_images_data.append((epoch_num, captured_images.detach().cpu()))
     print("-" * 40)
 
 print("Training Finished.")
+plot_captured_images(captured_images_data)
