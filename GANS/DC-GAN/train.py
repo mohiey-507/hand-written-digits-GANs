@@ -30,8 +30,11 @@ else:
 print(f"Using device: {device}")
 
 ## Define hyperparameters
+gen_hidden_dim = 128 
+desc_hidden_dim = 32 
+z_dim = 100
 batch_size = 128
-z_dim = 64
+
 lr = 2e-4
 beta1 = 0.5
 beta2 = 0.999
@@ -45,8 +48,8 @@ train_set = datasets.MNIST(root="./data", train=True, download=True, transform=t
 dataloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, drop_last=True)
 
 ## Define discriminator and generator
-gen = Generator().to(device)
-disc = Discriminator().to(device) 
+gen = Generator(z_dim, hidden_dim=gen_hidden_dim).to(device)
+disc = Discriminator(hidden_dim=desc_hidden_dim).to(device) 
 
 print("Initializing weights...")
 gen.apply(weights_init)
@@ -81,7 +84,7 @@ for epoch in range(n_epochs):
         disc_opt.zero_grad()
 
         # Generate fake images
-        noise = gen.get_noise(cur_batch_size, z_dim, device=device)
+        noise = gen.get_noise(batch_size, device=device)
         fake_images = gen(noise)
 
         real_logits = disc(real_images)
@@ -143,7 +146,7 @@ for epoch in range(n_epochs):
             print("  Generated Images:")
             gen.eval() # Switch to evaluation mode for generation
             with torch.no_grad():
-                noise_vis = gen.get_noise(25, z_dim, device=device)
+                noise_vis = gen.get_noise(25, device=device)
                 vis_images = gen(noise_vis)
                 show_tensor_images(vis_images)
             gen.train() # Switch back to training mode
@@ -159,10 +162,5 @@ for epoch in range(n_epochs):
     print(f"  Avg Generator Loss: {avg_gen_loss_epoch:.4f}")
     print(f"  Avg Discriminator Loss: {avg_disc_loss_epoch:.4f}")
     print("-" * 40)
-
-    # Save model checkpoints periodically
-    if (epoch + 1) % 10 == 0:
-        torch.save(gen.state_dict(), f'generator_epoch_{epoch+1}.pth')
-        torch.save(disc.state_dict(), f'discriminator_epoch_{epoch+1}.pth')
 
 print("Training Finished.")
