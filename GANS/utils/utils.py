@@ -1,5 +1,6 @@
 import math
 import torch
+import numpy as np
 import torch.nn as nn
 from torch.nn import functional as F
 from torchvision.utils import make_grid
@@ -116,3 +117,52 @@ def visualize_all_digits(generator, device, n_classes=10, examples_per_digit=9):
     plt.show()
 
     generator.train() 
+
+def plot_captured_images(captured_data):
+    """
+    Plots a selection of captured image grids (each originally 5x5) in a fixed 2x5 grid.
+    Displays up to 10 captured image grids, evenly spaced if more than 10 were captured.
+    Empty subplots are hidden if fewer than 10 grids are displayed.
+
+    Args:
+        captured_data (list): A list of tuples, where each tuple is (epoch, image_tensor).
+    """
+    num_captured = len(captured_data)
+    if num_captured == 0:
+        print("No images were captured.")
+        return
+
+    num_plots_to_show = min(10, num_captured)
+
+    # Select indices evenly spaced across the captured data
+    if num_captured <= num_plots_to_show:
+        # If 10 or fewer captured, show all of them
+        selected_indices = range(num_captured)
+    else:
+        # If more than 10 captured, select 10 evenly spaced indices
+        selected_indices = np.linspace(0, num_captured - 1, num_plots_to_show, dtype=int)
+
+    # Create the fixed 2x5 subplot grid 
+    fig, axes = plt.subplots(2, 5, figsize=(15, 7)) 
+    axes = axes.flatten()
+
+    print(f"\nDisplaying {len(selected_indices)} captured images")
+
+    # Plot the selected images
+    for i, idx in enumerate(selected_indices):
+        epoch_num, image_tensor = captured_data[idx]
+        ax = axes[i]
+
+        image_tensor_processed = (image_tensor + 1) / 2 # Denormalize
+        image_grid = make_grid(image_tensor_processed, nrow=5) 
+        ax.imshow(image_grid.permute(1, 2, 0).squeeze(), cmap='gray')
+        ax.set_title(f"Epoch {epoch_num}")
+        ax.axis('off')
+
+    # Hide any unused subplots 
+    for j in range(len(selected_indices), 10):
+        axes[j].axis('off')
+
+    plt.suptitle("Generated Images", fontsize=16, y=0.98)
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.show()
