@@ -37,10 +37,10 @@ n_epochs = 50
 display_step = 500 
 real_label_smoothing = 0.9 
 
-z_dim = 64          
+z_dim = 90          
 n_classes = 10      
-gen_hidden_dim = 64 
-disc_hidden_dim = 16 
+gen_hidden_dim = 128 
+disc_hidden_dim = 32 
 mnist_shape = (1, 28, 28) 
 
 gen_input_dim, disc_input_chan = get_input_dimensions(z_dim, mnist_shape, n_classes)
@@ -85,7 +85,9 @@ for epoch in range(n_epochs):
     for real_images, labels in pbar:
         real_images, labels = real_images.to(device), labels.to(device)
 
-        one_hot_labels_vec, image_one_hot_labels = get_one_hot_labels(labels, n_classes, mnist_shape, device)
+        one_hot_labels_vec = F.one_hot(labels, num_classes=n_classes).to(device).float()
+        image_one_hot_labels = one_hot_labels_vec[:, :, None, None]
+        image_one_hot_labels = image_one_hot_labels.repeat(1, 1, mnist_shape[1], mnist_shape[2])
 
         # -------------------------
         #  Train Discriminator
@@ -131,18 +133,8 @@ for epoch in range(n_epochs):
 
         gen_opt.zero_grad()
 
-        # We need to generate fake images *again* or use the ones from before
-        # BUT without detaching, so gradients flow back. Re-using is efficient.
-        # Generate noise and labels again (could optimize by storing from D step if needed)
-        fake_noise_g = gen.get_noise(batch_size, device=device)
-        one_hot_labels_vec_g, image_one_hot_labels_g = get_one_hot_labels(labels, n_classes, mnist_shape, device) # Recreate labels just in case
-        noise_and_labels_g = concat_vectors(fake_noise_g, one_hot_labels_vec_g)
-        fake_images_g = gen(noise_and_labels_g) # Generate images for G update
-
-        # Combine fake images with label maps (ensure using non-detached fake_images_g)
-        fake_image_and_labels_g = concat_vectors(fake_images_g, image_one_hot_labels_g)
-
         # Get discriminator predictions for the *Generator's* output
+        fake_image_and_labels_g = concat_vectors(fake_images, image_one_hot_labels)
         fake_logits_g = disc(fake_image_and_labels_g)
 
         # Calculate Generator loss - Generator wants Discriminator to predict 1 (real)
@@ -165,12 +157,12 @@ for epoch in range(n_epochs):
         #  Visualization
         # -------------------------
         if cur_step % display_step == 0 and cur_step > 0:
-            pbar.write(f"\n-- Step {cur_step} --") # Use pbar.write to avoid conflicts
+            pbar.write(f"\n-- Step {cur_step} --") 
             pbar.write(f"  Generator Loss (step): {gen_loss.item():.4f}")
             pbar.write(f"  Discriminator Loss (step): {disc_loss.item():.4f}")
 
             pbar.write("  Generated Images:")
-            gen.eval() # Set generator to evaluation mode
+            gen.eval()
 
             num_vis = 25 # Number of images to visualize
             vis_labels = torch.randint(0, 10, (num_vis,), device=device).long()
@@ -178,16 +170,15 @@ for epoch in range(n_epochs):
             # Get noise for visualization
             noise_vis = gen.get_noise(num_vis, device=device)
             # Get one-hot labels (vector format needed for Gen input)
-            one_hot_labels_vis_vec, _ = get_one_hot_labels(vis_labels, n_classes, mnist_shape, device)
+            one_hot_labels_vis_vec = F.one_hot(vis_labels, num_classes=n_classes).to(device).float()
             # Concatenate for generator
             noise_and_labels_vis = concat_vectors(noise_vis, one_hot_labels_vis_vec)
 
             with torch.no_grad():
-                # Generate images based on the noise and specific labels
                 vis_images = gen(noise_and_labels_vis)
             show_tensor_images(vis_images, num_images=num_vis)
 
-            gen.train() # Set generator back to training mode
+            gen.train()
 
         cur_step += 1
 
