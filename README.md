@@ -52,8 +52,8 @@ The implementation uses PyTorch and follows common practices for training cGANs 
 
 **Conditioning Mechanism:**
 
-   *   **Label Preparation (`get_one_hot_labels`):** This crucial utility function takes integer labels (0-9) and converts them into two one-hot encoded formats suitable for the networks:
-        1.  **Vector (`one_hot_labels_vec`):** Shape `(B, C, 1, 1)`. Used for concatenating with the noise vector for the Generator input.
+   *   **Label Preparation :** Takes integer labels (0-9) and converts them into two one-hot encoded formats suitable for the networks:
+        1.  **Vector (`one_hot_labels_vec`):** Shape `(B, C)`. Used for concatenating with the noise vector for the Generator input.
         2.  **Map (`one_hot_labels_map`):** Shape `(B, C, H, W)`. Created by repeating the vector across spatial dimensions (H, W = 28, 28). Used for concatenating with the image tensor for the Discriminator input.
 
 ### Output Example
