@@ -4,7 +4,7 @@ from torchvision.utils import make_grid
 from typing import List, Tuple
 
 def visualize_reconstructions(original: torch.Tensor, reconstructed: torch.Tensor,
-                            step: int, epoch: int, grid_size: int = 5):
+    grid_size: int = 5, title: str = "Original vs. Reconstructed Images"):
     """
     Visualizes original and reconstructed images in a 1x2 figure, 
     where each side is a grid (grid_size x grid_size).
@@ -35,16 +35,16 @@ def visualize_reconstructions(original: torch.Tensor, reconstructed: torch.Tenso
 
     # Plot Original Images (Left Grid)
     axes[0].imshow(grid_original.permute(1, 2, 0).squeeze(), cmap='gray')
-    axes[0].set_title(f'Original Images ({grid_size}x{grid_size})')
+    axes[0].set_title(f'Original Images ({min(num_images, grid_size**2)} shown)')
     axes[0].axis('off') 
 
     # Plot Reconstructed Images (Right Grid)
     axes[1].imshow(grid_reconstructed.permute(1, 2, 0).squeeze(), cmap='gray')
-    axes[1].set_title(f'Reconstructed Images ({grid_size}x{grid_size})')
+    axes[1].set_title(f'Reconstructed Images ({min(num_images, grid_size**2)} shown)')
     axes[1].axis('off') 
 
-    fig.suptitle(f'Epoch {epoch+1}, Step {step} Comparison', fontsize=12, y=.96)
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) 
+    fig.suptitle(title, fontsize=14, y=0.98)
+    plt.tight_layout(rect=[0, 0.01, 1, 0.96])
     plt.show()
 
 def plot_epoch_loss(epoch_losses_history: List[float]):
