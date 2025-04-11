@@ -63,3 +63,14 @@ class Decoder(nn.Module):
     def forward(self, latent_vec: torch.Tensor) -> torch.Tensor:
         x = self.gen(latent_vec)
         return x
+
+class Autoencoder(nn.Module):
+    def __init__(self, im_chan: int = 1, z_dim: int = 64, hidden_dim: int = 32):
+        super(Autoencoder, self).__init__()
+        self.encoder = Encoder(im_chan, z_dim, hidden_dim)
+        self.decoder = Decoder(z_dim, im_chan, hidden_dim)
+
+    def forward(self, image: torch.Tensor) -> torch.Tensor:
+        latent = self.encoder(image) # (batch_size, z_dim, 1, 1)
+        reconstructed = self.decoder(latent) # (batch_size, im_chan, 28, 28)
+        return reconstructed
