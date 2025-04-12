@@ -17,14 +17,14 @@ The goal is to implement and compare different generative models capable of prod
 
 ### 1. Generative Adversarial Networks (GANs)
 
-Directory: [`GANs/`](./GANs/)
+Directory: [`GANs/`](./GANS/)
 
 GANs utilize a two-player game between a Generator (creates fake images) and a Discriminator (tries to distinguish real from fake images). Through competition, the Generator learns to produce images indistinguishable from the real dataset.
 
 * **Deep Convolutional GAN (DC-GAN):** Uses convolutional layers for improved stability and image quality.
 * **Conditional GAN (cGAN):** Extends GANs to generate images based on a specific condition (e.g., generating a specific digit '7').
 
-See the [`GANs/README.md`](./GANs/README.md) for more details and implementation links.
+See the [`GANs/README.md`](./GANS/README.md) for more details and implementation links.
 
 ### 2. Autoencoders
 
@@ -40,7 +40,7 @@ See the [`Autoencoders/README.md`](./Autoencoders/README.md) for more details.
 ## Repository Structure
 
     .
-    ├── GANs/
+    ├── GANS/
     │   ├── README.md
     │   ├── DC-GAN/
     │   └── Conditional-GAN/
